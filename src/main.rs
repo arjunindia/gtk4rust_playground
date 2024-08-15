@@ -1,10 +1,10 @@
-use gtk::{glib, Application, ApplicationWindow, Button, Label, ListBox, ScrolledWindow};
-use gtk::{prelude::*, PolicyType};
+use gtk::{glib, Application, ApplicationWindow};
+use gtk::{prelude::*, ScrolledWindow};
 use mlua::prelude::*;
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
+mod api;
 
-const APP_ID: &str = "org.gtk_rs.HelloWorld1";
+const APP_ID: &str = "org.broust.browser";
 
 fn main() -> glib::ExitCode {
     // Create a new application
@@ -19,67 +19,65 @@ fn main() -> glib::ExitCode {
 
 fn build_ui(app: &Application) {
     let lua = Rc::new(Lua::new());
-    let map_table = lua.create_table().unwrap();
-    map_table.set(1, "one").unwrap();
-    map_table.set("two", 2).unwrap();
-    let list_box = Rc::new(RefCell::new(ListBox::new()));
+    let window = Rc::new(RefCell::new(
+        ApplicationWindow::builder()
+            .application(app)
+            .title("Broust")
+            .default_width(800)
+            .default_height(600)
+            .build(),
+    ));
+    let root = api::tree::create_container_node("vertical");
+    api::render(Rc::clone(&lua), root.clone());
+    let _ = lua.load(r#"
+        render(function()
+    -- Header Section
+    heading("My Awesome Blog")
+    text("Welcome to my blog where I share exciting content and insights on various topics.")
 
-    lua.globals().set("map_table", map_table).unwrap();
+    -- Navigation Bar
+    horizontal(function()
+        vertical(function()
+            text("Home")
+            text("About")
+            text("Categories")
+            text("Contact")
+        end)
+    end)
 
-    let list_box_clone = Rc::clone(&list_box);
-    let greet = lua
-        .create_function(move |_, name: String| {
-            let list_box = list_box_clone.borrow_mut();
-            let label = Label::new(Some(&name));
-            list_box.append(&label);
+    -- Blog Posts Section
+    horizontal(function()
+        vertical(function()
+            image("https://picsum.photos/400/200?random=1")
+            text("Amazing Blog Title 1")
+            text("A brief description of the first blog post. It covers interesting insights and provides valuable information.")
+        end)
+        vertical(function()
+            image("https://picsum.photos/400/200?random=2")
+            text("Intriguing Blog Title 2")
+            text("A summary of the second blog post. It dives into various topics and presents engaging content.")
+        end)
+        vertical(function()
+            image("https://picsum.photos/400/200?random=3")
+            text("Fascinating Blog Title 3")
+            text("An overview of the third blog post. It highlights important points and shares helpful tips.")
+        end)
+    end)
 
-            println!("Hello, {}!", name);
-            Ok(())
-        })
-        .unwrap();
-    lua.globals().set("greet", greet).unwrap();
-
-    let button = Button::builder()
-        .label("Press me!")
-        .margin_top(12)
-        .margin_bottom(12)
-        .margin_start(12)
-        .margin_end(12)
-        .build();
-
-    // Clone Lua for use in the closure
-    let lua_clone = Rc::clone(&lua);
-    button.connect_clicked(move |button| {
-        lua_clone
-            .load("for k,v in pairs(map_table) do print(k,v) greet('Arjun') end")
-            .exec()
-            .unwrap();
-
-        // Set the label to "Hello World!" after the button has been clicked on
-        button.set_label("Hello World!");
-    });
-
-    for number in 0..=100 {
-        let label = Label::new(Some(&number.to_string()));
-        list_box.borrow_mut().append(&label);
-    }
-
-    list_box.borrow_mut().append(&button);
-
+    -- Footer Section
+    text("Thank you for visiting my blog! Stay tuned for more updates and feel free to reach out if you have any questions.")
+end)"#
+    ).exec().unwrap();
+    let dom = api::tree::create_gtk_widget_from_node(root);
     let scrolled_window = ScrolledWindow::builder()
-        .hscrollbar_policy(PolicyType::Never)
+        .hscrollbar_policy(gtk::PolicyType::Automatic)
         .min_content_width(360)
         .min_content_height(100)
-        .child(&*list_box.borrow())
+        .child(&dom)
         .build();
 
     // Create a window and set the title
-    let window = ApplicationWindow::builder()
-        .application(app)
-        .title("My GTK App")
-        .child(&scrolled_window)
-        .build();
-
+    (&*window.borrow()).set_child(Some(&scrolled_window));
     // Present window
-    window.present();
+    (&*window.borrow()).present();
 }
