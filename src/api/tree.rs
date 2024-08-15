@@ -1,6 +1,9 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use gtk::gdk_pixbuf::Pixbuf;
+use gtk::gio::{Cancellable, MemoryInputStream};
+use gtk::glib::Bytes;
 use gtk::prelude::*;
 use gtk::{Application, ApplicationWindow, Box, Image, Label, Orientation};
 // Define an enum to represent different types of leaf nodes.
@@ -84,7 +87,14 @@ pub fn create_gtk_widget_from_node(node: Rc<RefCell<Node>>) -> gtk::Widget {
                 label.upcast()
             }
             LeafNode::Image(image_path) => {
-                let image = Image::from_file(image_path);
+                let result = reqwest::blocking::get(image_path).unwrap();
+                let bytes = result.bytes().unwrap().to_vec();
+                let bytes = Bytes::from(&bytes.to_vec());
+                let stream = MemoryInputStream::from_bytes(&bytes);
+                let pixbuf = Pixbuf::from_stream(&stream, Cancellable::NONE).unwrap();
+                let image = Image::from_pixbuf(Some(&pixbuf));
+                image.set_width_request(400);
+                image.set_height_request(300);
                 image.upcast()
             }
         },
