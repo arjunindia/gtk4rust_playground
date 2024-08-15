@@ -2,7 +2,8 @@ use mlua::{Error, Function, Lua};
 use std::{cell::RefCell, rc::Rc};
 
 use super::tree;
-
+// todo: Fix this, currently vertical/horizonal functions dont add container nodes to the tree and
+// actually do nothing except call the arg func.
 pub fn init_widgets(lua: &Lua, parent: Rc<RefCell<tree::Node>>) -> Result<(), Error> {
     let parent_copy = Rc::clone(&parent);
     let heading = lua.create_function(move |_, content: String| {
