@@ -5,21 +5,84 @@ use mlua::{prelude::*, Lua};
 pub fn patch(lua: Rc<Lua>) -> Result<(), LuaError> {
     lua.load(
         r#"
-        heading = function(title)
-            return {type="heading", title=title}
+        heading = function(arg1, title)
+            local properties, actual_title
+            if type(arg1) == "table" then
+                properties = arg1
+                actual_title = title
+            else
+                properties = {}
+                actual_title = arg1
+            end
+            return {type = "heading", title = actual_title, properties = properties}
         end
-        text = function(content)
-            return {type="text", content=content}
+
+        text = function(arg1, content)
+            local properties, actual_content
+            if type(arg1) == "table" then
+                properties = arg1
+                actual_content = content
+            else
+                properties = {}
+                actual_content = arg1
+            end
+            return {type = "text", content = actual_content, properties = properties}
         end
-        image = function(url)
-            return {type="image", url=url}
+
+        image = function(arg1, url)
+            local properties, actual_url
+            if type(arg1) == "table" then
+                properties = arg1
+                actual_url = url
+            else
+                properties = {}
+                actual_url = arg1
+            end
+            return {type = "image", url = actual_url, properties = properties}
         end
+
         horizontal = function(...)
-            return {type="horizontal", children={...}}
+            local args = {...}
+            local properties = {}
+            local children = {}
+
+            if type(args[1]) == "table" and not args[1].type then
+                -- If the first table does not have a "type" property, it's properties
+                properties = args[1]
+                table.remove(args, 1)  -- Remove properties from arguments
+            end
+
+            -- Collect remaining arguments as children
+            for _, child in ipairs(args) do
+                if type(child) == "table" and child.type then
+                    table.insert(children, child)
+                end
+            end
+
+            return {type = "horizontal", properties = properties, children = children}
         end
+
         vertical = function(...)
-            return {type="vertical", children={...}}
+            local args = {...}
+            local properties = {}
+            local children = {}
+
+            if type(args[1]) == "table" and not args[1].type then
+                -- If the first table does not have a "type" property, it's properties
+                properties = args[1]
+                table.remove(args, 1)  -- Remove properties from arguments
+            end
+
+            -- Collect remaining arguments as children
+            for _, child in ipairs(args) do
+                if type(child) == "table" and child.type then
+                    table.insert(children, child)
+                end
+            end
+
+            return {type = "vertical", properties = properties, children = children}
         end
+
 -- Function to recursively print nested tables
 function print_table(tbl, indent, done)
     -- Set default values for indent and done if not provided
