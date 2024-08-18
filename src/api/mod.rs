@@ -1,61 +1,58 @@
-use std::{cell::RefCell, rc::Rc};
+use std::rc::Rc;
 
-use gtk::{prelude::*, ApplicationWindow, Box, Button, Label, ScrolledWindow};
-use mlua::{prelude::*, Function};
+use mlua::{prelude::*, Lua};
 
-use self::tree::Node;
-pub mod tree;
-mod widgets;
-pub fn render(lua: Rc<Lua>, root: Rc<RefCell<Node>>) {
-    let list_box = Rc::new(RefCell::new(Box::new(gtk::Orientation::Vertical, 0)));
+pub fn patch(lua: Rc<Lua>) -> Result<(), LuaError> {
+    lua.load(
+        r#"
+        heading = function(title)
+            return {type="heading", title=title}
+        end
+        text = function(content)
+            return {type="text", content=content}
+        end
+        image = function(url)
+            return {type="image", url=url}
+        end
+        horizontal = function(...)
+            return {type="horizontal", children={...}}
+        end
+        vertical = function(...)
+            return {type="vertical", children={...}}
+        end
+-- Function to recursively print nested tables
+function print_table(tbl, indent, done)
+    -- Set default values for indent and done if not provided
+    indent = indent or 0
+    done = done or {}
 
-    let list_box_clone = Rc::clone(&list_box);
-    let greet = lua
-        .create_function(move |_, name: String| {
-            let list_box = list_box_clone.borrow_mut();
-            let label = Label::new(Some(&name));
-            list_box.append(&label);
+    -- Helper function to create indentation
+    local function indent_str(level)
+        return string.rep("  ", level)
+    end
 
-            println!("Hello, {}!", name);
-            Ok(())
-        })
-        .unwrap();
-    lua.globals().set("greet", greet).unwrap();
+    -- Function to print a single key-value pair
+    local function print_pair(key, value)
+        if type(value) == "table" then
+            if done[value] then
+                print(indent_str(indent) .. "[" .. tostring(key) .. "] = (already seen)")
+            else
+                done[value] = true
+                print(indent_str(indent) .. "[" .. tostring(key) .. "] = {")
+                print_table(value, indent + 1, done)
+                print(indent_str(indent) .. "}")
+            end
+        else
+            print(indent_str(indent) .. "[" .. tostring(key) .. "] = " .. tostring(value))
+        end
+    end
 
-    // Render function
-    let root_clone = Rc::clone(&root);
-    let render = lua
-        .create_function(move |lua, func: Function| {
-            let root_copy = Rc::clone(&root_clone);
-
-            //TODO: (broken as well) instead of passing list box, pass a tree node. let the widgets
-            //build a tree and at the end traverse the tree to make the UI.
-            widgets::init_widgets(lua, root_copy).unwrap();
-            func.call::<_, ()>(())?;
-            println!("{:?}", root_clone);
-            Ok(())
-        })
-        .unwrap();
-    lua.globals().set("render", render).unwrap();
-    let button = Button::builder()
-        .label("Press me!")
-        .margin_top(12)
-        .margin_bottom(12)
-        .margin_start(12)
-        .margin_end(12)
-        .build();
-
-    // Clone Lua for use in the closure
-    let lua_clone = Rc::clone(&lua);
-    button.connect_clicked(move |button| {
-        lua_clone
-            .load("greet('Arjun') render(function() heading('Hi') end)")
-            .exec()
-            .unwrap();
-
-        // Set the label to "Hello World!" after the button has been clicked on
-        button.set_label("Hello World!");
-    });
-
-    list_box.borrow_mut().append(&button);
+    -- Iterate over table elements and print each one
+    for key, value in pairs(tbl) do
+        print_pair(key, value)
+    end
+end
+        "#,
+    )
+    .exec()
 }
