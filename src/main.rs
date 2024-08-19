@@ -18,7 +18,7 @@ fn main() -> glib::ExitCode {
 }
 
 fn build_ui(app: &Application) {
-    let lua = Rc::new(Lua::new());
+    let lua = Box::new(Rc::new(Lua::new()));
     let window = Rc::new(RefCell::new(
         ApplicationWindow::builder()
             .application(app)
@@ -27,8 +27,9 @@ fn build_ui(app: &Application) {
             .default_height(600)
             .build(),
     ));
-    api::patch(lua.clone()).unwrap();
+    api::patch(*lua.clone()).unwrap();
     let _ = lua.load(r#"
+        i = 0;
         render = function()
             return horizontal(
                 vertical(
@@ -38,7 +39,11 @@ fn build_ui(app: &Application) {
                         text("Home"),
                         text("About"),
                         text("Categories"),
-                        text("Contact")
+                        text("Contact"),
+                        button({onclick=function()
+                                print(i)
+                                i=i+1
+                            end},"HIII")
                     ),
                     horizontal(
                         vertical(
@@ -63,10 +68,13 @@ fn build_ui(app: &Application) {
         end
         "#
     ).exec().unwrap();
-    let render = lua.globals().get::<_, LuaFunction>("render").unwrap();
+    let render = Box::leak(lua.clone())
+        .globals()
+        .get::<_, LuaFunction>("render")
+        .unwrap();
     let tree = render.call::<_, LuaValue>(()).unwrap();
     lua.load("print_table(render())").exec().unwrap();
-    let dom = view::render(tree).unwrap();
+    let dom = view::render(Box::leak(Box::new(tree))).unwrap();
     let scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(gtk::PolicyType::Automatic)
         .min_content_width(360)
