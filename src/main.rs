@@ -70,7 +70,7 @@ fn build_ui(app: &Application) {
     ).exec().unwrap();
     let render = Box::leak(lua.clone())
         .globals()
-        .get::<_, LuaFunction>("render")
+        .get::<_, LuaFunction<'static>>("render")
         .unwrap();
     let tree = render.call::<_, LuaValue>(()).unwrap();
     lua.load("print_table(render())").exec().unwrap();

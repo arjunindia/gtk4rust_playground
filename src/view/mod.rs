@@ -9,17 +9,35 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                 "heading" => {
                     let title = t.get::<_, String>("title")?;
                     let label = gtk::Label::new(Some(&title));
+                    label.add_css_class("heading");
                     label.set_selectable(true);
+                    label.set_halign(gtk::Align::Start);
+                    label.set_valign(gtk::Align::Start);
+                    label.set_vexpand(false);
+                    label.set_hexpand(false);
+
                     Ok(label.upcast())
                 }
                 "text" => {
                     let content = t.get::<_, String>("content")?;
                     let label = gtk::Label::new(Some(&content));
+                    label.add_css_class("text");
                     label.set_selectable(true);
+                    label.set_halign(gtk::Align::Start);
+                    label.set_valign(gtk::Align::Start);
+                    label.set_vexpand(false);
+                    label.set_hexpand(false);
+
                     Ok(label.upcast())
                 }
                 "button" => {
                     let button = gtk::Button::with_label("Click Me!");
+                    button.add_css_class("button");
+                    button.set_halign(gtk::Align::Start);
+                    button.set_valign(gtk::Align::Start);
+                    button.set_vexpand(false);
+                    button.set_hexpand(false);
+
                     button.connect_clicked(move |_| {
                         let properties: LuaTable = t.get("properties").unwrap();
                         let onclick: Option<LuaFunction> = properties.get("onclick").ok();
@@ -41,9 +59,13 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                     let stream = gtk::gio::MemoryInputStream::from_bytes(&bytes);
                     let pixbuf =
                         gtk::gdk_pixbuf::Pixbuf::from_stream(&stream, gtk::gio::Cancellable::NONE)?;
-                    let image = gtk::Image::from_pixbuf(Some(&pixbuf));
-                    image.set_width_request(400);
-                    image.set_height_request(300);
+                    let image = gtk::Picture::for_pixbuf(&pixbuf);
+
+                    image.add_css_class("image");
+                    image.set_halign(gtk::Align::Start);
+                    image.set_valign(gtk::Align::Start);
+                    image.set_vexpand(false);
+                    image.set_hexpand(false);
                     Ok(image.upcast())
                 }
                 "vertical" | "horizontal" => {
@@ -52,8 +74,14 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                     } else {
                         gtk::Box::new(gtk::Orientation::Vertical, 0)
                     };
+
+                    container.add_css_class("container");
+                    container.add_css_class(&element);
+                    container.set_halign(gtk::Align::Start);
+                    container.set_valign(gtk::Align::Start);
                     container.set_homogeneous(false);
                     container.set_vexpand(false);
+                    container.set_hexpand(false);
                     container.set_baseline_position(gtk::BaselinePosition::Top);
                     let children = t.get::<_, Vec<LuaValue>>("children")?;
                     for child in children {
