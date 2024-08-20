@@ -1,4 +1,5 @@
 use super::api::elements;
+use gtk::gdk::Display;
 use gtk::prelude::*;
 use mlua::prelude::*;
 use std::error::Error;
@@ -12,12 +13,7 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                 "heading" => {
                     let title = t.get::<_, String>("title")?;
                     let label = Box::new(Rc::new(gtk::Label::new(Some(&title))));
-                    label.add_css_class("heading");
                     label.set_selectable(true);
-                    label.set_halign(gtk::Align::Start);
-                    label.set_valign(gtk::Align::Start);
-                    label.set_vexpand(false);
-                    label.set_hexpand(false);
                     let interface = elements::heading::HeadingOptions {
                         widget: Box::leak(label.clone()),
                     };
@@ -31,12 +27,7 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                 "text" => {
                     let content = t.get::<_, String>("content")?;
                     let label = Box::new(Rc::new(gtk::Label::new(Some(&content))));
-                    label.add_css_class("text");
                     label.set_selectable(true);
-                    label.set_halign(gtk::Align::Start);
-                    label.set_valign(gtk::Align::Start);
-                    label.set_vexpand(false);
-                    label.set_hexpand(false);
                     let interface = elements::text::TextOptions {
                         widget: Box::leak(label.clone()),
                     };
@@ -46,15 +37,23 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                     } else {
                     }
 
+                    if let Some(width) = properties.get::<_, i32>("width").ok() {
+                        label.set_width_chars(width);
+                    }
+                    if let Some(max_width) = properties.get::<_, i32>("max_width").ok() {
+                        label.set_max_width_chars(max_width);
+                    }
+
                     Ok(<gtk::Label as Clone>::clone(&label.clone()).upcast())
                 }
+                "input" => {
+                    let input = Box::new(Rc::new(gtk::Text::new()));
+
+                    Ok(<gtk::Text as Clone>::clone(&input.clone()).upcast())
+                }
                 "button" => {
-                    let button = Box::new(Rc::new(gtk::Button::with_label("Click Me!")));
-                    button.add_css_class("button");
-                    button.set_halign(gtk::Align::Start);
-                    button.set_valign(gtk::Align::Start);
-                    button.set_vexpand(false);
-                    button.set_hexpand(false);
+                    let content = t.get::<_, String>("content")?;
+                    let button = Box::new(Rc::new(gtk::Button::with_label(&content)));
 
                     button.connect_clicked(move |_| {
                         let properties: LuaTable = t.get("properties").unwrap();
@@ -85,11 +84,6 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                     let pixbuf =
                         gtk::gdk_pixbuf::Pixbuf::from_stream(&stream, gtk::gio::Cancellable::NONE)?;
                     let image = Box::new(Rc::new(gtk::Picture::for_pixbuf(&pixbuf)));
-                    image.add_css_class("image");
-                    image.set_halign(gtk::Align::Start);
-                    image.set_valign(gtk::Align::Start);
-                    image.set_vexpand(false);
-                    image.set_hexpand(false);
                     let interface = elements::image::ImageOptions {
                         widget: Box::leak(image.clone()),
                         url,
@@ -103,20 +97,37 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                     Ok(<gtk::Picture as Clone>::clone(&image.clone()).upcast())
                 }
                 "vertical" | "horizontal" => {
-                    let container = if element == "horizontal" {
-                        gtk::Box::new(gtk::Orientation::Horizontal, 0)
+                    let spacing = if let Some(spacing) = properties.get::<_, i32>("spacing").ok() {
+                        spacing
                     } else {
-                        gtk::Box::new(gtk::Orientation::Vertical, 0)
+                        0
+                    };
+
+                    let container = if element == "horizontal" {
+                        gtk::Box::new(gtk::Orientation::Horizontal, spacing)
+                    } else {
+                        gtk::Box::new(gtk::Orientation::Vertical, spacing)
                     };
 
                     container.add_css_class("container");
-                    container.add_css_class(&element);
-                    container.set_halign(gtk::Align::Start);
-                    container.set_valign(gtk::Align::Start);
-                    container.set_homogeneous(false);
-                    container.set_vexpand(false);
-                    container.set_hexpand(false);
-                    container.set_baseline_position(gtk::BaselinePosition::Top);
+                    if let Some(balanced) = properties.get::<_, bool>("balanced").ok() {
+                        container.set_homogeneous(balanced);
+                    } else {
+                        container.set_homogeneous(false);
+                    }
+
+                    if let Some(baseline) = properties.get::<_, String>("baseline_position").ok() {
+                        let baseline = match baseline.to_lowercase().as_str() {
+                            "top" => gtk::BaselinePosition::Top,
+                            "center" => gtk::BaselinePosition::Center,
+                            "bottom" => gtk::BaselinePosition::Bottom,
+                            _ => gtk::BaselinePosition::Top,
+                        };
+                        container.set_baseline_position(baseline);
+                    } else {
+                        container.set_baseline_position(gtk::BaselinePosition::Top);
+                    }
+
                     let children = t.get::<_, Vec<LuaValue>>("children")?;
                     for child in children {
                         let rendered_child = render(Box::leak(Box::new(child)))?;
@@ -128,6 +139,18 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
             };
             match widget {
                 Ok(widget) => {
+                    // default css class
+                    widget.add_css_class(&element);
+
+                    // size
+
+                    if let Some(height) = properties.get::<_, i32>("height").ok() {
+                        widget.set_height_request(height);
+                    }
+
+                    if let Some(width) = properties.get::<_, i32>("width").ok() {
+                        widget.set_height_request(width);
+                    }
                     // margin
                     if let Some(margin_top) = properties.get::<_, i32>("marginTop").ok() {
                         widget.set_margin_top(margin_top);
@@ -154,8 +177,11 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                             _ => gtk::Align::Start,
                         };
                         widget.set_halign(halign);
+                    } else {
+                        widget.set_halign(gtk::Align::Start);
                     }
-if let Some(valign) = properties.get::<_, String>("valign").ok() {
+
+                    if let Some(valign) = properties.get::<_, String>("valign").ok() {
                         let valign = match valign.to_lowercase().as_str() {
                             "start" => gtk::Align::Start,
                             "end" => gtk::Align::End,
@@ -167,6 +193,19 @@ if let Some(valign) = properties.get::<_, String>("valign").ok() {
                             _ => gtk::Align::Start,
                         };
                         widget.set_valign(valign);
+                    } else {
+                        widget.set_valign(gtk::Align::Start);
+                    }
+                    // expand
+                    if let Some(hexpand) = properties.get::<_, bool>("hexpand").ok() {
+                        widget.set_hexpand(hexpand);
+                    } else {
+                        widget.set_hexpand(false)
+                    }
+                    if let Some(vexpand) = properties.get::<_, bool>("vexpand").ok() {
+                        widget.set_vexpand(vexpand);
+                    } else {
+                        widget.set_vexpand(false)
                     }
 
                     Ok(widget)

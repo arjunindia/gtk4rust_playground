@@ -30,6 +30,20 @@ pub fn patch(lua: Rc<Lua>) -> Result<(), LuaError> {
             return {type = "text", content = actual_content, properties = properties}
         end
 
+        input = function(arg1, content)
+            local properties, actual_content
+            if type(arg1) == "table" then
+                properties = arg1
+                actual_content = content
+            else
+                properties = {}
+                actual_content = arg1
+            end
+            return {type = "input", content = actual_content, properties = properties}
+        end
+
+
+
         button = function(arg1, content)
             local properties, actual_content
             if type(arg1) == "table" then
