@@ -29,11 +29,13 @@ fn build_ui(app: &Application) {
     ));
     api::patch(*lua.clone()).unwrap();
     let _ = lua.load(r#"
-        i = 0;
+        i = 0
+        imageRef = nil
+        headingRef = nil
         render = function()
             return horizontal(
                 vertical(
-                    heading("My Awesome Blog"),
+                    heading({ref = function(ref) headingRef = ref end},"My Awesome Blog"),
                     text("Welcome to my blog where I share exciting content and insights on various topics."),
                     horizontal(
                         text("Home"),
@@ -42,12 +44,14 @@ fn build_ui(app: &Application) {
                         text("Contact"),
                         button({onclick=function()
                                 print(i)
+                                headingRef.label = i
+                                imageRef.url = "https://picsum.photos/400/200?random=" .. i
                                 i=i+1
                             end},"HIII")
                     ),
                     horizontal(
                         vertical(
-                            image("https://picsum.photos/400/200?random=1"),
+                            image({ref=function(ref) imageRef = ref  end},"https://picsum.photos/400/200?random=" .. i),
                             text("Amazing Blog Title 1"),
                             text("A brief description of the first blog post. It covers interesting insights and provides valuable information.")
                         ),
