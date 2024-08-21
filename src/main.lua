@@ -7,10 +7,10 @@ local render = function()
             heading({ ref = function(ref) headingRef = ref end }, "My Awesome Blog"),
             text("Welcome to my blog where I share exciting content and insights on various topics."),
             horizontal(
-                text({ valign = "baselinecenter" }, "Home"),
-                text({ valign = "baselinecenter" }, "About"),
-                text({ valign = "baselinecenter" }, "Categories"),
-                text({ valign = "baselinecenter" }, "Contact"),
+                link({ valign = "baselinecenter",url="https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/main.lua" }, "Home"),
+                link({ valign = "baselinecenter",url="https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/gallery.lua" }, "Gallery"),
+                link({ valign = "baselinecenter",url="https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/counter.lua" }, "Counter"),
+                link({ valign = "baselinecenter" }, "Contact"),
                 button({
                     onclick = function()
                         print(i)
