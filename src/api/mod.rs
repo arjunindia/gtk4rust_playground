@@ -4,6 +4,14 @@ use std::rc::Rc;
 use mlua::{prelude::*, Lua};
 
 pub fn patch(lua: Rc<Lua>) -> Result<(), LuaError> {
+    let fetch = lua.create_function(|_, url: String| {
+        let result = reqwest::blocking::get(url.clone()).unwrap();
+        let resp = elements::fetch::FetchOptions {
+            response: result.text().unwrap(),
+        };
+        Ok(resp)
+    })?;
+    lua.globals().set("fetch", fetch)?;
     lua.load(
         r#"
         heading = function(arg1, title)
@@ -40,6 +48,18 @@ pub fn patch(lua: Rc<Lua>) -> Result<(), LuaError> {
                 actual_content = arg1
             end
             return {type = "input", content = actual_content, properties = properties}
+        end
+
+       link = function(arg1, content)
+            local properties, actual_content
+            if type(arg1) == "table" then
+                properties = arg1
+                actual_content = content
+            else
+                properties = {}
+                actual_content = arg1
+            end
+            return {type = "input", content = actual_content,onclick=function() window(loadstring(fetch(properties.url).body)) end ,url = properties.url, properties = properties}
         end
 
 

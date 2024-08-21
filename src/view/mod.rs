@@ -46,6 +46,26 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
 
                     Ok(<gtk::Label as Clone>::clone(&label.clone()).upcast())
                 }
+                "link" => {
+                    let content = t.get::<_, String>("content")?;
+                    let url = t.get::<_, String>("url")?;
+                    let label = Box::new(Rc::new(gtk::LinkButton::with_label(&url, &content)));
+                    let interface = elements::link::LinkOptions {
+                        widget: Box::leak(label.clone()),
+                    };
+                    let reffunc = properties.get::<_, LuaFunction>("ref").ok();
+                    if let Some(func) = reffunc {
+                        func.call::<elements::link::LinkOptions, ()>(interface)?;
+                    } else {
+                    }
+                    let onclick = t.get::<_, LuaFunction>("onclick")?;
+                    label.connect_activate_link(move |_| {
+                        onclick.call::<_, ()>(());
+                        gtk::glib::signal::Propagation::Stop
+                    });
+
+                    Ok(<gtk::LinkButton as Clone>::clone(&label.clone()).upcast())
+                }
                 "input" => {
                     let input = Box::new(Rc::new(gtk::Text::new()));
 
