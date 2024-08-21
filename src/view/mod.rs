@@ -169,7 +169,7 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                     }
 
                     if let Some(width) = properties.get::<_, i32>("width").ok() {
-                        widget.set_height_request(width);
+                        widget.set_width_request(width);
                     }
                     // margin
                     if let Some(margin_top) = properties.get::<_, i32>("marginTop").ok() {

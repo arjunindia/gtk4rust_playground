@@ -61,7 +61,7 @@ pub fn patch(lua: Rc<Lua>) -> Result<(), LuaError> {
                 properties = {}
                 actual_content = arg1
             end
-            return {type = "link", content = actual_content,onclick=function() print("link click") r = load(fetch(properties.url).body) window(r) end ,url = properties.url, properties = properties}
+            return {type = "link", content = actual_content,onclick=function() print("link click") local r,e = load(fetch(properties.url).body) ok,ren = pcall(r) window(ren) end ,url = properties.url, properties = properties}
         end
 
 
