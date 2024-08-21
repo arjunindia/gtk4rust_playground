@@ -1,0 +1,7 @@
+version: "3"
+services:
+  cross:
+    image: ghcr.io/mglolenstine/gtk4-cross:rust-gtk-4.12
+    volumes:
+      - .:/mnt:z
+    command: bash -c "build && package"
