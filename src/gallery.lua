@@ -12,7 +12,7 @@ end
 local render = function()
     return horizontal(
         button({ onclick = left }, "<"),
-        image({ ref = imageRef }, "https://picsum.photos/600/400"),
+        image({ ref = function(ref) ref=imageRef end }, "https://picsum.photos/600/400"),
         button({ onclick = right }, ">")
     )
 end
