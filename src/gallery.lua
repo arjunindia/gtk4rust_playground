@@ -8,7 +8,7 @@ local render = function()
     i = i - 1
     imageRef.url = "https://picsum.photos/600/400?random=" .. i
 end }, "<"),
-        image({ ref = function(ref) imageRef end }, "https://picsum.photos/600/400"),
+        image({ ref = function(ref) imageRef=ref end }, "https://picsum.photos/600/400"),
         button({ onclick = function()
     i = i + 1
     imageRef.url = "https://picsum.photos/600/400?random=" .. i
