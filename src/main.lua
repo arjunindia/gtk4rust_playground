@@ -1,7 +1,7 @@
 i = 0
 imageRef = nil
 headingRef = nil
-render = function()
+local render = function()
     return horizontal(
         vertical(
             heading({ ref = function(ref) headingRef = ref end }, "My Awesome Blog"),
@@ -51,7 +51,7 @@ render = function()
                 )
             ),
             text(
-            "Thank you for visiting my blog! Stay tuned for more updates and feel free to reach out if you have any questions.")
+                "Thank you for visiting my blog! Stay tuned for more updates and feel free to reach out if you have any questions.")
         )
     )
 end

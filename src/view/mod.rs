@@ -60,7 +60,7 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                     }
                     let onclick = t.get::<_, LuaFunction>("onclick")?;
                     label.connect_activate_link(move |_| {
-                        onclick.call::<_, ()>(());
+                        onclick.call::<_, ()>(()).unwrap();
                         gtk::glib::signal::Propagation::Stop
                     });
 

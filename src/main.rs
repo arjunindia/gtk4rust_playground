@@ -41,6 +41,20 @@ fn build_ui(app: &Application) {
             .default_height(600)
             .build(),
     ));
+    let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    let container = Rc::new(RefCell::new(container));
+    let container_copy = container.clone();
+    let b_lua = lua.clone();
+    let render_child = Box::leak(b_lua)
+        .create_function(move |_, tree: LuaValue| {
+            let tree = Box::leak(Box::new(tree.clone()));
+            println!("{:?}", tree);
+            let child = view::render(tree).unwrap();
+            (container_copy.borrow_mut()).prepend(&child);
+            Ok(())
+        })
+        .unwrap();
+    lua.globals().set("window", render_child);
     api::patch(*lua.clone()).unwrap();
 
     let _ = lua.load(r#"
@@ -50,6 +64,7 @@ fn build_ui(app: &Application) {
         render = function()
             return horizontal(
                     link({url = "https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/main.lua"},"Home")
+                    )
                 end
         "#
     ).exec().unwrap();
@@ -60,6 +75,8 @@ fn build_ui(app: &Application) {
     let tree = render.call::<_, LuaValue>(()).unwrap();
     lua.load("print_table(render())").exec().unwrap();
     let dom = view::render(Box::leak(Box::new(tree))).unwrap();
+    container.borrow().append(&dom);
+
     let scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(gtk::PolicyType::Automatic)
         .min_content_width(1920)
@@ -68,21 +85,10 @@ fn build_ui(app: &Application) {
         .margin_start(10)
         .margin_end(10)
         .margin_bottom(10)
-        .child(&dom)
+        .child(&*container.borrow())
         .build();
-    let scrolled_window = Rc::new(RefCell::new(scrolled_window));
-    let scrolled_window_copy = scrolled_window.clone();
-    let render_child = Box::leak(lua.clone())
-        .create_function(move |_, tree: LuaValue| {
-            let tree = Box::leak(Box::new(tree.clone()));
-            let child = view::render(tree).unwrap();
-            child.set_parent(&*(scrolled_window_copy.borrow()));
-            Ok(())
-        })
-        .unwrap();
-    lua.globals().set("window", render_child);
     // Create a window and set the title
-    (&*window.borrow()).set_child(Some(&*scrolled_window.borrow()));
+    (&*window.borrow()).set_child(Some(&scrolled_window));
     // Present window
     (&*window.borrow()).present();
 }

@@ -6,9 +6,11 @@ use mlua::{prelude::*, Lua};
 pub fn patch(lua: Rc<Lua>) -> Result<(), LuaError> {
     let fetch = lua.create_function(|_, url: String| {
         let result = reqwest::blocking::get(url.clone()).unwrap();
+        let r = result.text().unwrap();
         let resp = elements::fetch::FetchOptions {
-            response: result.text().unwrap(),
+            response: r.clone(),
         };
+        println!("{url},{}", r);
         Ok(resp)
     })?;
     lua.globals().set("fetch", fetch)?;
@@ -59,7 +61,7 @@ pub fn patch(lua: Rc<Lua>) -> Result<(), LuaError> {
                 properties = {}
                 actual_content = arg1
             end
-            return {type = "input", content = actual_content,onclick=function() window(loadstring(fetch(properties.url).body)) end ,url = properties.url, properties = properties}
+            return {type = "link", content = actual_content,onclick=function() print("link click") r = load(fetch(properties.url).body) window(r()) end ,url = properties.url, properties = properties}
         end
 
 
