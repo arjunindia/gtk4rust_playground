@@ -1,19 +1,18 @@
 i = 0
 imageRef = nil
 headingRef = nil
-left = function()
-    i = i - 1
-    imageRef.url = "https://picsum.photos/600/400?random=" .. i
-end
-right = function()
-    i = i + 1
-    imageRef.url = "https://picsum.photos/600/400?random=" .. i
-end
+
 local render = function()
     return horizontal(
-        button({ onclick = left }, "<"),
+        button({ onclick = function()
+    i = i - 1
+    imageRef.url = "https://picsum.photos/600/400?random=" .. i
+end }, "<"),
         image({ ref = function(ref) ref=imageRef end }, "https://picsum.photos/600/400"),
-        button({ onclick = right }, ">")
+        button({ onclick = function()
+    i = i + 1
+    imageRef.url = "https://picsum.photos/600/400?random=" .. i
+end }, ">")
     )
 end
 
