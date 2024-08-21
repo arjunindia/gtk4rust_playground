@@ -10,7 +10,7 @@ local render = function()
                 link({ valign = "baselinecenter",url="https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/main.lua" }, "Home"),
                 link({ valign = "baselinecenter",url="https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/gallery.lua" }, "Gallery"),
                 link({ valign = "baselinecenter",url="https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/counter.lua" }, "Counter"),
-                link({ valign = "baselinecenter" }, "Contact"),
+                text({ valign = "baselinecenter" }, "Contact"),
                 button({
                     onclick = function()
                         print(i)
