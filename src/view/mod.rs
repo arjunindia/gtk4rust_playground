@@ -35,9 +35,7 @@ pub fn render<'a>(tree: &'a mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>>
                     let reffunc = properties.get::<_, LuaFunction>("ref").ok();
                     if let Some(func) = reffunc {
                         func.call::<elements::text::TextOptions, ()>(interface)?;
-                    } else {
                     }
-
                     if let Some(width) = properties.get::<_, i32>("width").ok() {
                         label.set_width_chars(width);
                     }
@@ -245,6 +243,9 @@ pub fn render<'a>(tree: &'a mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>>
                 Err(e) => Err(e),
             }
         }
-        _ => Err("Render function returns invalid result!".into()),
+        _ => {
+            println!("{:?}", tree);
+            Err("Render function returns invalid result!".into())
+        }
     }
 }

@@ -1,10 +1,9 @@
 local i = 0
 local imageRef = nil
-local headingRef = nil
 local render = function()
     return vertical(
         { vexpand = true },
-        heading({ ref = function(ref) headingRef = ref end }, "Arjun's Awesome Blog"),
+        heading("Arjun's Awesome Blog"),
         text("Welcome to my blog where I share exciting content and insights on various topics."),
         horizontal(
             { spacing = 10 },
@@ -65,9 +64,9 @@ local render = function()
             )
         ),
         text(
-            "Thank you for visiting my blog! Stay tuned for more updates and feel free to reach out if you have any questions.")
+        "Thank you for visiting my blog! Stay tuned for more updates and feel free to reach out if you have any questions.")
     )
 end
 
-_tree = render()
+local _tree = render()
 return _tree;
