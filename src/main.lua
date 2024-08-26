@@ -66,5 +66,5 @@ render = function()
     )
 end
 
-local _tree = render
+local _tree = render()
 return _tree;
