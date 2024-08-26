@@ -1,5 +1,3 @@
-local i = 0
-local imageRef = nil
 local render = function()
     return vertical(
         { vexpand = true },
@@ -64,7 +62,7 @@ local render = function()
             )
         ),
         text(
-        "Thank you for visiting my blog! Stay tuned for more updates and feel free to reach out if you have any questions.")
+            "Thank you for visiting my blog! Stay tuned for more updates and feel free to reach out if you have any questions.")
     )
 end
 
