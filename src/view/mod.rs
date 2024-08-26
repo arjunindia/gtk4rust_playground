@@ -237,7 +237,7 @@ pub fn render<'a>(tree: &'a mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>>
                     if let Some(vexpand) = properties.get::<_, bool>("vexpand").ok() {
                         widget.set_vexpand(vexpand);
                     } else {
-                        widget.set_vexpand(false)
+                        widget.set_vexpand(false);
                     }
 
                     Ok(widget)
