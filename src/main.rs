@@ -58,7 +58,7 @@ fn build_ui(app: &Application) {
             Ok(())
         })
         .unwrap();
-    lua.globals().set("window", render_child).unwrap();
+    lua.globals().set("window", render_child);
 
     let _ = lua.load(r#"
         i = 0

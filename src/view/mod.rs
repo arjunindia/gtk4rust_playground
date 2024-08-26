@@ -21,7 +21,6 @@ pub fn render(tree: &'static mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>
                     let reffunc = properties.get::<_, LuaFunction>("ref").ok();
                     if let Some(func) = reffunc {
                         func.call::<elements::heading::HeadingOptions, ()>(interface)?;
-                    } else {
                     }
                     Ok(<gtk::Label as Clone>::clone(&label.clone()).upcast())
                 }
@@ -56,10 +55,7 @@ pub fn render(tree: &'static mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>
                     if let Some(func) = reffunc {
                         func.call::<elements::link::LinkOptions, ()>(interface)?;
                     }
-                    println!("onclick: not yetr");
-
-                    let onclick = t.get::<_, LuaFunction>("onclick").unwrap();
-                    println!("onclick: {:?}", onclick);
+                    let onclick = t.get::<_, LuaFunction>("onclick")?;
                     unsafe {
                         label.connect_unsafe("activate-link", false, move |_| {
                             onclick.call::<_, ()>(()).unwrap();
@@ -123,7 +119,6 @@ pub fn render(tree: &'static mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>
                     let reffunc = properties.get::<_, LuaFunction>("ref").ok();
                     if let Some(func) = reffunc {
                         func.call::<elements::image::ImageOptions, ()>(interface)?;
-                    } else {
                     }
 
                     Ok(<gtk::Picture as Clone>::clone(&image.clone()).upcast())
