@@ -2,5 +2,6 @@ pub mod button;
 pub(super) mod fetch;
 pub mod heading;
 pub mod image;
-pub mod text;
+pub mod input;
 pub mod link;
+pub mod text;

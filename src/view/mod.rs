@@ -67,7 +67,16 @@ pub fn render(tree: &'static mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>
                 }
                 "input" => {
                     let input = Box::new(Rc::new(gtk::Text::new()));
-
+                    if let Some(placeholder) = properties.get::<_, String>("placeholder").ok() {
+                        input.set_placeholder_text(Some(&placeholder));
+                    }
+                    let interface = elements::input::InputOptions {
+                        widget: Box::leak(input.clone()),
+                    };
+                    let reffunc = properties.get::<_, LuaFunction>("ref").ok();
+                    if let Some(func) = reffunc {
+                        func.call::<elements::input::InputOptions, ()>(interface)?;
+                    }
                     Ok(<gtk::Text as Clone>::clone(&input.clone()).upcast())
                 }
                 "button" => {

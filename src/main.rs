@@ -60,18 +60,26 @@ fn build_ui(app: &Application) {
         .unwrap();
     lua.globals().set("window", render_child);
 
-    let _ = lua.load(r#"
-        i = 0
-        imageRef = nil
-        headingRef = nil
+    let _ = lua
+        .load(
+            r#"
+        local handleLink = function(url) print("link click") local r,e = load(fetch(url).body) ok,ren = pcall(r) window(ren) end
+        local inputRef = nil
         render = function()
             return horizontal({halign="fill",valign="fill"},
-                    input({halign="fill",width=80}),
-                    link({url = "https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/main.lua"},"Go!")
+                    input({halign="fill",width=80,
+                        ref=function(ref)
+                            inputRef = ref
+                        end}),
+                    button({onclick=function()
+                            handleLink(inputRef.value)
+                        end},"Go!")
                    )
                 end
-        "#
-    ).exec().unwrap();
+        "#,
+        )
+        .exec()
+        .unwrap();
     let binding = Box::leak(lua.clone());
     let render = binding.globals().get::<_, LuaFunction>("render").unwrap();
     let tree = render.call::<_, LuaValue>(()).unwrap();
