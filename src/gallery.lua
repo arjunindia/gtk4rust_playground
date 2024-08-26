@@ -4,15 +4,23 @@ headingRef = nil
 
 local render = function()
     return horizontal(
-        button({ onclick = function()
-    i = i - 1
-    imageRef.url = "https://picsum.photos/600/400?random=" .. i
-end }, "<"),
-        image({ ref = function(ref) imageRef=ref end }, "https://picsum.photos/600/400"),
-        button({ onclick = function()
-    i = i + 1
-    imageRef.url = "https://picsum.photos/600/400?random=" .. i
-end }, ">")
+        button({
+            width = 20,
+            height = 90,
+            onclick = function()
+                i = i - 1
+                imageRef.url = "https://picsum.photos/600/400?random=" .. i
+            end
+        }, "<"),
+        image({ width = 50, height = 90 }, { ref = function(ref) imageRef = ref end }, "https://picsum.photos/600/400"),
+        button({
+            width = 20,
+            height = 90,
+            onclick = function()
+                i = i + 1
+                imageRef.url = "https://picsum.photos/600/400?random=" .. i
+            end
+        }, ">")
     )
 end
 
