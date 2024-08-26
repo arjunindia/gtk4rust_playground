@@ -35,10 +35,11 @@ local render = function()
                     end
                 }, "HIII")
             ),
-            horizontal({
-                    width = 100, spacing = 20 },
+            vertical({
+                    width = 100, spacing = 10 },
                 vertical(
-                    image({ ref = function(ref) imageRef = ref end }, "https://picsum.photos/400/200?random=" .. i),
+                    image({ ref = function(ref) imageRef = ref end, width = 50, height = 30 },
+                        "https://picsum.photos/400/200?random=" .. i),
                     vertical(
                         text("Amazing Blog Title 1"),
                         text({ max_width = 35 },
