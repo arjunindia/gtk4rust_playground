@@ -42,15 +42,18 @@ fn build_ui(app: &Application) {
             .build(),
     ));
     let container = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    container.set_valign(gtk::Align::Fill);
     let container = Rc::new(RefCell::new(container));
     let container_copy = container.clone();
     let b_lua = lua.clone();
-    let render_child = Box::leak(b_lua)
+    let render_child = b_lua
         .create_function(move |_, tree: LuaValue| {
-            let tree = Box::leak(Box::new(tree.clone()));
+            let container_copy = container_copy.borrow_mut();
+            container_copy.remove(&container_copy.last_child().unwrap());
+            let mut tree = Box::leak(Box::new(tree.clone()));
             println!("{:?}", tree);
-            let child = view::render(tree).unwrap();
-            (container_copy.borrow_mut()).prepend(&child);
+            let child = view::render(&mut tree).unwrap();
+            container_copy.prepend(&child);
             Ok(())
         })
         .unwrap();
@@ -62,25 +65,26 @@ fn build_ui(app: &Application) {
         imageRef = nil
         headingRef = nil
         render = function()
-            return horizontal(
-                    link({url = "https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/main.lua"},"Home")
-                    )
+            return horizontal({halign="fill",valign="fill"},
+                    input({halign="fill",width=80}),
+                    link({url = "https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/main.lua"},"Go!")
+                   )
                 end
         "#
     ).exec().unwrap();
-    let render = Box::leak(lua.clone())
-        .globals()
-        .get::<_, LuaFunction<'static>>("render")
-        .unwrap();
+    let binding = Box::leak(lua.clone());
+    let render = binding.globals().get::<_, LuaFunction>("render").unwrap();
     let tree = render.call::<_, LuaValue>(()).unwrap();
     lua.load("print_table(render())").exec().unwrap();
-    let dom = view::render(Box::leak(Box::new(tree))).unwrap();
+    let dom = view::render(&mut Box::new(tree)).unwrap();
     container.borrow().append(&dom);
 
     let scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(gtk::PolicyType::Automatic)
-        .min_content_width(1920)
-        .min_content_height(900)
+        .max_content_width(800)
+        .min_content_width(800)
+        .max_content_height(600)
+        .min_content_height(600)
         .margin_top(20)
         .margin_start(10)
         .margin_end(10)

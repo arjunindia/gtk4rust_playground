@@ -1,10 +1,11 @@
 use super::api::elements;
-use gtk::gdk::Display;
 use gtk::prelude::*;
 use mlua::prelude::*;
+use std::cell::RefCell;
 use std::error::Error;
 use std::rc::Rc;
-pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<dyn Error>> {
+
+pub fn render<'a>(tree: &'a mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>> {
     match tree {
         LuaValue::Table(t) => {
             let element = t.get::<_, String>("type")?;
@@ -58,11 +59,13 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                         func.call::<elements::link::LinkOptions, ()>(interface)?;
                     } else {
                     }
-                    let onclick = t.get::<_, LuaFunction>("onclick")?;
-                    label.connect_activate_link(move |_| {
-                        onclick.call::<_, ()>(()).unwrap();
-                        gtk::glib::signal::Propagation::Stop
-                    });
+                    let onclick = t.get::<_, LuaFunction>("onclick").unwrap();
+                    unsafe {
+                        label.connect_unsafe("activate-link", false, move |_| {
+                            onclick.call::<_, ()>(()).unwrap();
+                            Some(gtk::glib::signal::Propagation::Stop.into())
+                        });
+                    }
 
                     Ok(<gtk::LinkButton as Clone>::clone(&label.clone()).upcast())
                 }
@@ -74,19 +77,28 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                 "button" => {
                     let content = t.get::<_, String>("content")?;
                     let button = Box::new(Rc::new(gtk::Button::with_label(&content)));
-
-                    button.connect_clicked(move |_| {
-                        let properties: LuaTable = t.get("properties").unwrap();
-                        if let Some(func) = properties.get::<_, LuaFunction>("onclick").ok() {
-                            func.call::<_, ()>(()).unwrap();
-                        } else {
-                            println!("'onclick' function is not set in Lua.");
-                        }
-                    });
+                    let t = t.clone();
+                    let properties =
+                        Rc::new(RefCell::new(t.get::<_, LuaTable>("properties").unwrap()));
+                    let properties_clone = properties.clone();
+                    unsafe {
+                        button.connect_unsafe("clicked", false, move |_| {
+                            if let Some(func) = properties_clone
+                                .borrow()
+                                .get::<_, LuaFunction>("onclick")
+                                .ok()
+                            {
+                                func.call::<_, ()>(()).unwrap();
+                            } else {
+                                println!("'onclick' function is not set in Lua.");
+                            };
+                            None
+                        });
+                    }
                     let interface = elements::button::ButtonOptions {
                         widget: Box::leak(button.clone()),
                     };
-                    let reffunc = properties.get::<_, LuaFunction>("ref").ok();
+                    let reffunc = properties.borrow().get::<_, LuaFunction>("ref").ok();
                     if let Some(func) = reffunc {
                         func.call::<elements::button::ButtonOptions, ()>(interface)?;
                     } else {
@@ -165,11 +177,11 @@ pub fn render(tree: &'static mut LuaValue<'static>) -> Result<gtk::Widget, Box<d
                     // size
 
                     if let Some(height) = properties.get::<_, i32>("height").ok() {
-                        widget.set_height_request(height);
+                        widget.set_height_request(height * 8);
                     }
 
                     if let Some(width) = properties.get::<_, i32>("width").ok() {
-                        widget.set_width_request(width);
+                        widget.set_width_request(width * 6);
                     }
                     // margin
                     if let Some(margin_top) = properties.get::<_, i32>("marginTop").ok() {
