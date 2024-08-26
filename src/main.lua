@@ -23,7 +23,7 @@ render = function()
                     url =
                     "https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/counter.lua"
                 }, "Counter"),
-            text({ valign = "baselinecenter" }, "Contact"),
+            text({ valign = "baselinecenter" }, "Contact")
         ),
         vertical({
                 width = 100, spacing = 5 },
