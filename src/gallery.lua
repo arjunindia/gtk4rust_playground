@@ -12,7 +12,7 @@ local render = function()
                 imageRef.url = "https://picsum.photos/600/400?random=" .. i
             end
         }, "<"),
-        image({ width = 50, height = 90 }, { ref = function(ref) imageRef = ref end }, "https://picsum.photos/600/400"),
+        image({ width = 50, height = 90, ref = function(ref) imageRef = ref end }, "https://picsum.photos/600/400"),
         button({
             width = 20,
             height = 90,

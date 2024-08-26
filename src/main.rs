@@ -63,10 +63,16 @@ fn build_ui(app: &Application) {
     let _ = lua
         .load(
             r#"
-        local handleLink = function(url) print("link click") local r,e = load(fetch(url).body) ok,ren = pcall(r) window(ren) end
+        local handleLink = function(url) 
+            print("link click")
+            local r,e = load(fetch(url).body)
+            ok,ren = pcall(r)
+            window(ren)
+        end
         local inputRef = nil
         render = function()
-            return horizontal({halign="fill",valign="fill"},
+            return horizontal(
+                    {halign="fill",valign="fill"},
                     input({halign="fill",width=80,
                         ref=function(ref)
                             inputRef = ref
@@ -74,8 +80,8 @@ fn build_ui(app: &Application) {
                     button({onclick=function()
                             handleLink(inputRef.value)
                         end},"Go!")
-                   )
-                end
+                )
+            end
         "#,
         )
         .exec()
