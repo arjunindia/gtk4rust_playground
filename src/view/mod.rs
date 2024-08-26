@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use std::error::Error;
 use std::rc::Rc;
 
-pub fn render<'a>(tree: &'a mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>> {
+pub fn render(tree: &'static mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>> {
     match tree {
         LuaValue::Table(t) => {
             let element = t.get::<_, String>("type")?;
@@ -55,9 +55,11 @@ pub fn render<'a>(tree: &'a mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>>
                     let reffunc = properties.get::<_, LuaFunction>("ref").ok();
                     if let Some(func) = reffunc {
                         func.call::<elements::link::LinkOptions, ()>(interface)?;
-                    } else {
                     }
+                    println!("onclick: not yetr");
+
                     let onclick = t.get::<_, LuaFunction>("onclick").unwrap();
+                    println!("onclick: {:?}", onclick);
                     unsafe {
                         label.connect_unsafe("activate-link", false, move |_| {
                             onclick.call::<_, ()>(()).unwrap();

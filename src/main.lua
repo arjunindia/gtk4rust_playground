@@ -1,4 +1,4 @@
-local render = function()
+render = function()
     return vertical(
         { vexpand = true },
         heading("Arjun's Awesome Blog"),

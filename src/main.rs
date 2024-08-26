@@ -33,6 +33,7 @@ fn load_css() {
 }
 fn build_ui(app: &Application) {
     let lua = Box::new(Rc::new(Lua::new()));
+    api::patch(*lua.clone()).unwrap();
     let window = Rc::new(RefCell::new(
         ApplicationWindow::builder()
             .application(app)
@@ -46,19 +47,18 @@ fn build_ui(app: &Application) {
     let container = Rc::new(RefCell::new(container));
     let container_copy = container.clone();
     let b_lua = lua.clone();
-    let render_child = b_lua
+    let render_child = Box::leak(b_lua)
         .create_function(move |_, tree: LuaValue| {
             let container_copy = container_copy.borrow_mut();
             container_copy.remove(&container_copy.last_child().unwrap());
-            let mut tree = Box::leak(Box::new(tree.clone()));
+            let tree = Box::leak(Box::new(tree.clone()));
             println!("{:?}", tree);
-            let child = view::render(&mut tree).unwrap();
+            let child = view::render(tree).unwrap();
             container_copy.prepend(&child);
             Ok(())
         })
         .unwrap();
-    lua.globals().set("window", render_child);
-    api::patch(*lua.clone()).unwrap();
+    lua.globals().set("window", render_child).unwrap();
 
     let _ = lua.load(r#"
         i = 0
@@ -76,7 +76,7 @@ fn build_ui(app: &Application) {
     let render = binding.globals().get::<_, LuaFunction>("render").unwrap();
     let tree = render.call::<_, LuaValue>(()).unwrap();
     lua.load("print_table(render())").exec().unwrap();
-    let dom = view::render(&mut Box::new(tree)).unwrap();
+    let dom = view::render(Box::leak(Box::new(tree))).unwrap();
     container.borrow().append(&dom);
 
     let scrolled_window = ScrolledWindow::builder()
