@@ -4,9 +4,10 @@ local headingRef = nil
 local render = function()
     return horizontal(
         vertical(
-            heading({ ref = function(ref) headingRef = ref end }, "My Awesome Blog"),
+            heading({ ref = function(ref) headingRef = ref end }, "Arjun's Awesome Blog"),
             text("Welcome to my blog where I share exciting content and insights on various topics."),
             horizontal(
+                { spacing = 10 },
                 link(
                     {
                         valign = "baselinecenter",
@@ -26,20 +27,14 @@ local render = function()
                         "https://raw.githubusercontent.com/arjunindia/gtk4rust_playground/main/src/counter.lua"
                     }, "Counter"),
                 text({ valign = "baselinecenter" }, "Contact"),
-                button({
-                    onclick = function()
-                        print(i)
-                        headingRef.label = i
-                        imageRef.url = "https://picsum.photos/400/200?random=" .. i
-                        i = i + 1
-                    end
-                }, "HIII")
             ),
             vertical({
-                    width = 100, spacing = 10 },
+                    width = 100, spacing = 5 },
                 vertical(
-                    image({ ref = function(ref) imageRef = ref end, width = 50, height = 30 },
-                        "https://picsum.photos/400/200?random=" .. i),
+                    image(
+                        { width = 50, height = 30 },
+                        "https://picsum.photos/400/200?random"
+                    ),
                     vertical(
                         text("Amazing Blog Title 1"),
                         text({ max_width = 35 },
@@ -47,7 +42,10 @@ local render = function()
                     )
                 ),
                 vertical(
-                    image("https://picsum.photos/400/200?random=2"),
+                    image(
+                        { width = 50, height = 30 },
+                        "https://picsum.photos/400/200?random"
+                    ),
                     vertical(
                         text("Intriguing Blog Title 2"),
                         text({ max_width = 65 },
@@ -55,7 +53,10 @@ local render = function()
                     )
                 ),
                 vertical(
-                    image("https://picsum.photos/400/200?random=3"),
+                    image(
+                        { width = 50, height = 30 },
+                        "https://picsum.photos/400/200?random"
+                    ),
                     vertical(
                         text("Fascinating Blog Title 3"),
                         text({ max_width = 65 },
