@@ -1,5 +1,6 @@
 -- Main render function that returns the root element of the page
 function render()
+    local buttonRef = nil
     -- State management for the button click
     local buttonClicked = false
 
@@ -7,7 +8,7 @@ function render()
     local function handleClick()
         buttonClicked = not buttonClicked
         -- Update the button text based on the click state
-        buttonRef:setLabel(buttonClicked and "Clicked!" or "Click me!")
+        buttonRef.label = buttonClicked and "Clicked!" or "Click me!"
     end
 
     -- Reference for the button element
@@ -32,7 +33,7 @@ function render()
             -- Image with a placeholder URL
             image(
                 { width = 50, marginTop = 20 },
-                "https://via.placeholder.com/150"
+                "https://picsum.photos/150"
             )
         ),
 
