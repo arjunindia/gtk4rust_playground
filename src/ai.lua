@@ -1,6 +1,6 @@
 local counter = 0
 local counterLabel = nil
-local imageUrl = "https://example.com/image.jpg"
+local imageUrl = "https://picsum.photos/200/300"
 local imagePicture = nil
 
 local function updateCounter()
@@ -9,15 +9,15 @@ local function updateCounter()
 end
 
 local function toggleImage()
-    if imageUrl == "https://example.com/image.jpg" then
-        imageUrl = "https://example.com/alternate-image.jpg"
+    if imageUrl == "https://picsum.photos/200/300" then
+        imageUrl = "https://picsum.photos/300/300"
     else
-        imageUrl = "https://example.com/image.jpg"
+        imageUrl = "https://picsum.photos/200/300"
     end
     imagePicture.url = imageUrl
 end
 
-local render = function()
+render = function()
     return vertical(
         heading("Broust Demo Page"),
         text("Welcome to this interactive demonstration of Broust's capabilities."),
@@ -30,7 +30,7 @@ local render = function()
 
         input({
             placeholder = "Enter your name",
-            width = 200,
+            width = 25,
             marginBottom = 10
         }),
 
@@ -44,8 +44,8 @@ local render = function()
         image({
             ref = function(ref) imagePicture = ref end,
             url = imageUrl,
-            width = 300,
-            height = 200,
+            width = 25,
+            height = 50,
             marginBottom = 10
         }),
 
