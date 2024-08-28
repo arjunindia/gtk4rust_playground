@@ -21,42 +21,34 @@ render = function()
     return vertical(
         heading("Broust Demo Page"),
         text("Welcome to this interactive demonstration of Broust's capabilities."),
-
         horizontal(
             { spacing = 10, marginTop = 20, marginBottom = 20 },
             button({ onclick = updateCounter }, "Increment Counter"),
             text({ ref = function(ref) counterLabel = ref end }, "Counter: " .. counter)
         ),
-
         input({
             placeholder = "Enter your name",
             width = 25,
             marginBottom = 10
         }),
-
         button({
             onclick = function()
                 print("Hello button clicked!")
             end,
             marginBottom = 20
         }, "Say Hello"),
-
         image({
             ref = function(ref) imagePicture = ref end,
-            url = imageUrl,
             width = 25,
             height = 50,
             marginBottom = 10
-        }),
-
+        }, imageUrl),
         button({ onclick = toggleImage }, "Toggle Image"),
-
         horizontal(
             { spacing = 20, marginTop = 20 },
             link({ url = "https://example.com" }, "Visit Example.com"),
             link({ url = "https://github.com" }, "Check out GitHub")
         ),
-
         vertical(
             { marginTop = 30 },
             heading("About Broust"),
