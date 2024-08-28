@@ -95,10 +95,8 @@ fn build_ui(app: &Application) {
 
     let scrolled_window = ScrolledWindow::builder()
         .hscrollbar_policy(gtk::PolicyType::Automatic)
-        .max_content_width(800)
-        .min_content_width(800)
-        .max_content_height(600)
-        .min_content_height(600)
+        .min_content_width(900)
+        .min_content_height(900)
         .margin_top(20)
         .margin_start(10)
         .margin_end(10)

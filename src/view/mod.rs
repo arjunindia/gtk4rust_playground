@@ -203,11 +203,11 @@ pub fn render(tree: &'static mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>
                     // size
 
                     if let Some(height) = properties.get::<_, i32>("height").ok() {
-                        widget.set_height_request(height * 8);
+                        widget.set_height_request(height * 9);
                     }
 
                     if let Some(width) = properties.get::<_, i32>("width").ok() {
-                        widget.set_width_request(width * 6);
+                        widget.set_width_request(width * 9);
                     }
                     // margin
                     if let Some(margin_top) = properties.get::<_, i32>("marginTop").ok() {
