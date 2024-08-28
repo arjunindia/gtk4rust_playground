@@ -4,7 +4,7 @@ local imagePicture = nil
 local render = function()
     return vertical(
         horizontal(
-            { width = 100, height = 10, balanced = true },
+            { width = 100, height = 10, halign = "center", balanced = true },
             text({ vexpand = true }, "SaaSPro"),
             horizontal(
                 { hexpand = true, halign = "end" },
