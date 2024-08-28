@@ -79,6 +79,28 @@ pub fn render(tree: &'static mut LuaValue) -> Result<gtk::Widget, Box<dyn Error>
                     }
                     Ok(<gtk::Text as Clone>::clone(&input.clone()).upcast())
                 }
+                "dropdown" => {
+                    let content = properties.get::<_, Vec<String>>("content").unwrap();
+                    let vec_of_strs: Vec<&str> = content.iter().map(|s| s.as_str()).collect();
+                    let slice_of_strs: &[&str] = &vec_of_strs;
+                    let dropdown = Box::new(Rc::new(gtk::DropDown::from_strings(slice_of_strs)));
+                    if let Some(search) = properties.get::<_, bool>("search").ok() {
+                        dropdown.set_enable_search(search);
+                    }
+                    if let Some(selected) = properties.get::<_, u32>("selected").ok() {
+                        dropdown.set_selected(selected);
+                    }
+                    let interface = elements::dropdown::DropDownOptions {
+                        widget: Box::leak(dropdown.clone()),
+                        vect: content,
+                    };
+                    let reffunc = properties.get::<_, LuaFunction>("ref").ok();
+                    if let Some(func) = reffunc {
+                        func.call::<elements::dropdown::DropDownOptions, ()>(interface)?;
+                    }
+
+                    Ok(<gtk::DropDown as Clone>::clone(&dropdown.clone()).upcast())
+                }
                 "button" => {
                     let content = t.get::<_, String>("content")?;
                     let button = Box::new(Rc::new(gtk::Button::with_label(&content)));

@@ -1,4 +1,5 @@
 pub mod button;
+pub mod dropdown;
 pub(super) mod fetch;
 pub mod heading;
 pub mod image;
