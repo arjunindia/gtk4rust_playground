@@ -1,6 +1,6 @@
 -- Main render function that returns the root element of the page
+local buttonRef = nil
 function render()
-    local buttonRef = nil
     -- State management for the button click
     local buttonClicked = false
 
@@ -10,9 +10,6 @@ function render()
         -- Update the button text based on the click state
         buttonRef.label = buttonClicked and "Clicked!" or "Click me!"
     end
-
-    -- Reference for the button element
-    local buttonRef
 
     -- Page layout
     return vertical(
